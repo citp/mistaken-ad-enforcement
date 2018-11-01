@@ -1,0 +1,217 @@
+\documentclass{article}
+\usepackage[letterpaper, margin=1.2in]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\graphicspath{ {./figures/} }
+\usepackage{url}
+
+<<init, echo=FALSE>>=
+if(file.exists("data/ad.placement.attempts.10.15.2018.RData")){
+  load("data/ad.placement.attempts.10.15.2018.RData")
+}else{
+  print("ERROR LOADING ad.placement.attempts.10.15.2018.RData")
+}
+@
+
+\title{Estimating Publication Rates of Non-Election Ads \\ by Facebook and Google}
+\author{Austin Hounsel, J. Nathan Matias\footnote{Corresponding authors: J. Nathan Matias (jmatias@princeton.edu) \& Austin Hounsel (ahounsel@princeton.edu)}, Ben Werdmuller, Jason Griffey, Melissa Hopkins, \\ Chris Peterson, Scott A.\ Hale, and Nick Feamster}
+\date{October 2018}
+
+\begin{document}
+\maketitle
+
+\section*{Overview}
+Technology companies including Facebook and Google have created policies governing the kinds of advertisements they prohibit during the 2018 U.S. election. All enforcement systems make mistakes, and companies have been criticized for prohibiting ads that are unrelated to the election, including ads for public gatherings and for products that share names with candidates. Companies have also been accused of political bias in these enforcement mistakes. Both companies publish transparency databases that cannot be used to estimate enforcement rates, since they do not include information about advertisements that were prohibited and never published. 
+
+In this study, we ask how common these mistakes are and what kinds of ads are mistakenly prohibited by Facebook and Google. Over \Sexpr{as.integer((last.date - first.date))} days, \Sexpr{length(unique(ad.placement.attempt$poster.id))} U.S. citizens living inside and outside the United States attempted to publish \Sexpr{nrow(ad.placement.attempt)} non-election advertisements that varied in the type of ad, its potentially-mistaken political leaning, and its geographic targeting to a federal or state election voter population. Google did not prohibit any of the ads posted. Facebook prohibited \Sexpr{round(nrow(subset(ad.placement.attempt, platform=="Facebook" & publication.status.permitted==FALSE))/ nrow(subset(ad.placement.attempt, platform=="Facebook"))*100, 2)}\% of the submitted ads. 
+
+We found systematic evidence that Facebook's policy enforcers are more likely to prohibit some kinds of non-election ads than others. Advertisements for national parks and veteran's day celebrations were more commonly prohibited by Facebook than product ads. Within our sample size, we failed to find any differences of mistaken enforcement by Facebook in the leaning of the ad, the US/Non-US location of the submitter, or state/federal election targeting.
+
+\section*{Introduction}
+Since the 2016 United States presidential election, voters have become more aware of the potential for online advertising on social media platforms to influence elections. In response to numerous Congressional hearings, companies like Facebook \cite{madrigal_will_2018} and Google \cite{reardon_politicians_2018} have implemented policies that limit who can publish election-related ads during national elections, developed processes to detect election ads, now require authorization before publishing election ads, and include transparency information about the publisher next to election ads \cite{bowles_facebook_2018}.
+
+Any enforcement system makes mistakes, and journalists have reported numerous cases of non-election ads\footnote{We use the term ``non-election ads'' to refer to ads that are not regulated by the Federal Election Commission, that do not support a candidate, and which are not prohibited by platform policies on election advertising. Details of the specific advertisements are available in the ``Materials and Methods'' section.} that were falsely prohibited or labeled as election advertisements. One such example is an ad placed by ``Bush's Beans", an American food company that shares its name with former United States presidents \cite{rosenberg_facebook_2018}. Similarly, Facebook has reportedly removed ads for non-election gatherings of LGBTQ people and websites for U.S. military veterans on the grounds that they were election-related \cite{mak_facebook_2018, gale_facebooks_2018}. In these cases, Facebook mistakenly prevented non-election advertisements from being published, and the company has apologized and changed its decisions after news articles mentioned those decisions.
+
+While Google and Facebook's transparency websites provide information on advertisements that they have approved, they do not provide information about ads that were never approved or published. Consequently, these transparency services do not provide information on how frequently companies make mistakenly prohibit non-election ads. In this study, we extend field experiment methods that have been used elsewhere in studies of internet censorship to estimate the rate at which non-election advertising is mistakenly prohibited by Google and Facebook \cite{king_reverse-engineering_2014}.
+
+By investigating the rate at which non-election ads are prohibited, we are studying the performance of a platform's enforcement systems on average. Policy enforcement mistakes could result from many factors, including the details of a company's policies, the quality of training, the behavior of automated filter software, and perhaps differences in the judgment of individual workers. Because this study cannot distinguish between those factors, and because we evaluate the system as a whole rather than evaluating individuals, these findings should never be interpreted as a reflection upon any individual worker enacting policy for these companies.
+
+During \Sexpr{as.integer((last.date - first.date))} days in September and October 2018, our team of \Sexpr{length(unique(ad.placement.attempt$poster.id))} U.S. citizens attempted to publish \Sexpr{nrow(ad.placement.attempt)} advertisements to learn more about what kinds of ads platforms published and disallowed. Overall, we asked two research questions. First: what \textit{kinds of ads} do Facebook and Google mistakenly prohibit under their election policies? Second, \textit{what percentage} of non-election ads are wrongly prohibited by these companies? 
+
+\section*{Materials and Methods}
+To ask these questions, we carried out the following procedure and pre-registered the analysis at the Open Science Framework before collecting any data.\footnote{\url{https://osf.io/4zudh/}}\footnote{By pre-registering our analysis, we commit in advance to our analysis approach before seeing the data, as a way to ensure that we protect ourselves from conscious and unconscious biases in the study analysis. Pre-registration is becoming the norm for demonstrating research integrity in many social science fields \cite{lindsay_preregistration_2018}.} 
+
+We created software to generate ads that are not related to the election but which might be mistaken for candidate ads or mistaken for topics related to the election (Figures \ref{fig:facebook_ad_examples} and \ref{fig:google_ad_examples}). The software used public sources to retrieve information used to generate ads that named and linked to products, parks, and public events. The software then allocated these advertisements to co-investigators, enabling us to sample each combination of ad type, investigator type, and location. Where the platform required ads to be associated with a group, channel, or page, investigators created a separate page for each ad type. The variables we considered include:
+
+\begin{itemize}
+    \item Ad type: Whether the ad could be mistaken for candidate support ad (a product that shares the name of a political candidate) or mistaken for focusing on political issues (national parks and veterans gatherings, for example) 
+    \begin{itemize}
+        \item Product ads were generated by searching the bestbuy.com product API\footnote{\url{https://bestbuyapis.github.io/api-documentation/?shell#products-api}} for musical albums with titles that contained candidate names. These names were queried from U.S. Federal Election Commission APIs of election candidates\footnote{\url{https://api.open.fec.gov/developers/}} and Wikipedia's list of gubernatorial elections.\footnote{\url{https://en.wikipedia.org/wiki/United_States_gubernatorial_elections,_2018}}
+        \item Park ads were generated by querying the Wikipedia archive of locations, names, and images of U.S. national parks
+        \item Veterans day parade ads were generated by querying Vetfriends.com, which at the time was a public website that listed the details of veterans day parades across the United States
+    \end{itemize}
+    \item Leaning: whether the ad could be mistaken for left or right leaning content, or for supporting Republican or Democrat candidates
+    \item Location: the targeted location of the ad, based on a specific election that the ad could be mistaken for: 
+    \begin{itemize}
+        \item a state (governor) or federal (senate) election
+        \item targeted advertising for the state or voting district associated with the election
+    \end{itemize}
+\end{itemize}
+
+We recruited a team of  \Sexpr{length(unique(ad.placement.attempt$poster.id))} co-investigators who are U.S. citizens and who have characteristics that we thought might influence the chance of an advertisement to receive enforcement. The two types of investigators were:
+
+\begin{itemize}
+    \item US: U.S. citizens with an EN-US browser locales and U.S. IP address locations using U.S. Dollars to place ads
+    \item Non-US: U.S. citizen with a non-US browser locale and non-US IP address, using a non-US bank and non-US currency (CAD, GBP) to place ads
+\end{itemize}
+
+We attempted to publish each ad for a period of 48 hours at a budget of 1 unit of currency per day (US, CAD, GBP). We then observed whether the ad was published by the platform after review\footnote{Our pre-analysis plan specified that we would observe whether the ad included transparency information, but since none of the investigators went through the authorization process for posting election-related ads, and since none of the prohibited ads were published by the platforms, none of these ads were eligible for these transparency features.}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{figures/examples-of-non-election-ads-facebook.png}
+    \caption{Previews of Facebook ads that were posted to one of our Facebook pages during this study (actual ads may have been posted to a different page).}
+    \label{fig:facebook_ad_examples}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/examples-of-non-election-ads-google.png}
+    \caption{Previews of Google ads that we posted during this study.}
+    \label{fig:google_ad_examples}
+\end{figure}
+
+\subsection*{Legal and Ethical Considerations}
+For legal and ethical reasons, we did not place any ads that explicitly (or implicitly) endorsed a political candidate. The lead researchers on this study are employed by Princeton University, which holds a 501(c)(3) non-profit status. According to federal law, 501(c)(3)s are forbidden from participating in electioneering, which includes placing advertisements that advocate for a candidate. Instead, we focused this research on advertising that is completely unrelated to the election.
+
+We designed this study through repeated and iterative discussions within our team and with outside advisors about the ethics of this research and the potential risks to participants. By choosing to test ads that do not engage in campaigning, and by balancing the number of ads that could be mistakenly construed as right or left leaning, we minimized the risk to voters and to elections \cite{desposato_ethical_2014}. 
+
+We also submitted this study for review by the Princeton Research Integrity and Assurance (RIA) committee. After considering this research procedure in conversation with our team, the committee decided it does not fall under the purview of the U.S. Common Rule for research ethics, since in their view it constitutes a contribution to institutional rather than generalizable knowledge. Princeton RIA, in line with U.S. government regulations, governs ``systematic investigation, including research development, testing and evaluation, designed to develop or contribute to generalizable knowledge.'' While this study does systematically investigate a question, RIA concluded that this study does not contribute to generalizable knowledge since it offers no information on advertising outside of Facebook and Google. Despite this decision, we have followed standard practices in academic research ethics to minimize the risk from our research and to protect the privacy of those involved---storing all data securely, anonymizing the data, and minimizing the number of people who were exposed to the ads.
+
+\subsection*{Project materials}
+All of our code and data are publicly available on GitHub.\footnote{The repository can be found at \url{github.com/citp/mistaken-ad-enforcement}.} We have published these materials to be completely transparent about how we carried out this study. 
+
+\subsection*{Methods}
+Our main analysis estimates the rate at which a certain type of advertisement is permitted. To do so, we computed the groupwise means and confidence intervals for the chance of an ad of a certain kind posted by a certain kind of person to be permitted by a platform. Groupwise means and confidence intervals are generated using the binom.confint function in the R library \textit{binom}. At small sample sizes, a small increase in the number of ads placed may lead to large differences in the calculated 95\% confidence intervals. For this reason, we used the Wilson estimation method for confidence intervals, which minimizes variation in confidence intervals between small differences in the sample size, at smaller samples \cite{brown_interval_2001}. 
+
+We also conducted exploratory logistic regression models to test for any characteristics that are more likely than others to receive mistaken enforcement, within a given platform.
+
+\section*{Results}
+From \Sexpr{first.date} through \Sexpr{last.date}, our team of \Sexpr{length(unique(ad.placement.attempt$poster.id))} posted a total of \Sexpr{nrow(ad.placement.attempt)} ads to Facebook and Google.\footnote{One intended Facebook ad was not found in our final records and may not have been posted. We have removed this observation from the analysis} We observed whether the ad was prevented from being published by the platform for allegedly violating policies about election advertising.\footnote{One product ad was blocked by Facebook because the platform judged that the cover image included too much skin. We manually chose a different image and made another attempt, which was published by the platform. We did not count this as an ad blocked for its relation to the election.}
+
+Google did not prohibit any of the \Sexpr{nrow(subset(ad.placement.attempt, platform=="Google"))} ads that we posted to their platform. Facebook however prevented \Sexpr{nrow(subset(ad.placement.attempt, publication.status.permitted==FALSE))} out of \Sexpr{nrow(subset(ad.placement.attempt, platform=="Facebook"))} ads from publication, citing their election policies, a total of \Sexpr{round(nrow(subset(ad.placement.attempt, publication.status.permitted==FALSE & platform=="Facebook")) / nrow(subset(ad.placement.attempt, platform=="Facebook")) * 100, 1)}\% of the ads we placed.\footnote{To confirm that these ads were genuinely permissible, we submitted two of the ads to Facebook's appeals process, and the company reversed their decision for both.} Parks and parade ads were \Sexpr{nrow(subset(ad.placement.attempt, publication.status.permitted==FALSE & platform=="Facebook" & ad.general.issue==TRUE))} of the ads that Facebook prohibited, and \Sexpr{nrow(subset(ad.placement.attempt, publication.status.permitted==FALSE & platform=="Facebook" & ad.general.issue==FALSE))} of them was a product ad. Among ads that Facebook prevented from publishing, \Sexpr{nrow(subset(ad.placement.attempt, publication.status.permitted==FALSE & platform=="Facebook" & ad.candidate.party=="Republican"))} could have been mistaken for being right leaning or for Republican candidates, and \Sexpr{nrow(subset(ad.placement.attempt, publication.status.permitted==FALSE & platform=="Facebook" & ad.candidate.party=="Democrat"))} might have been mistaken for being left leaning or for Democrat candidates. Groupwise means and confidence intervals for each tested characteristic are available in Figure \ref{fig:per_characteristic_results} and Table 2.
+
+We also conducted exploratory logistic regression models within the ads posted to Facebook. We found that Facebook permitted \Sexpr{round(subset(issue.candidate.lm.sim, ad.general.issue==TRUE)$prob.fit*100)}\% park and holiday advertisements compared to \Sexpr{round(subset(issue.candidate.lm.sim, ad.general.issue==FALSE)$prob.fit*100)}\% of product ads, a statistically-significant difference of 10 percentage points (p=\Sexpr{round(summary(issue.candidate.lm)$coefficients['ad.general.issueTRUE',][['Pr(>|z|)']], 3)}) (Figure \ref{fig:issue_vs_candidate}, Table \ref{table:coefficients} ``Ad Type"). We also tested hypotheses about differences in leaning, ad location, and the location of the ad-poster. In each case, we did not observe a statistically-significant result, though it is possible that with a larger sample size, we may have done so (Table \ref{table:coefficients}). Based these exploratory findings, we created a combined of mistaken enforcement rates per platform based on election level and political leaning (Figure \ref{fig:state_leaning}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{advertising_analysis_full_results.png}
+    \caption{Groupwise means and confidence intervals for each combination of characteristics among ad posters and ads}
+    \label{fig:per_characteristic_results}
+
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figures/issue_vs_candidate_mistakes.png}
+    \caption{Estimated difference in Facebook's mistaken enforcement rate toward non-election ads about parks and parades compared to the enforcement rate towards products}
+    \label{fig:issue_vs_candidate}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{advertising-analysis-full-results-allpersonas.png}
+    \caption{Groupwise means and confidence intervals for ads between political leaning}
+    \label{fig:state_leaning}
+
+\end{figure}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{l c c c c }
+\hline
+ & Ad Type & Leaning & Location & Ad Poster \\
+\hline
+(Intercept)              & $5.05^{***}$ & $2.77^{***}$ & $4.34^{***}$ & $4.06^{***}$ \\
+                         & $(1.00)$     & $(0.39)$     & $(1.01)$     & $(0.71)$     \\
+Ad Type (Park \& Parade) & $-2.97^{**}$ &              &              &              \\
+                         & $(1.06)$     &              &              &              \\
+Leaning (Republican)     &              & $0.88$       &              &              \\
+                         &              & $(0.70)$     &              &              \\
+Location (State)         &              &              & $-1.52$      &              \\
+                         &              &              & $(1.06)$     &              \\
+Poster Location (US)     &              &              &              & $-1.42$      \\
+                         &              &              &              & $(0.80)$     \\
+\hline
+AIC                      & 72.62        & 85.25        & 83.99        & 83.06        \\
+BIC                      & 79.56        & 92.20        & 90.93        & 90.00        \\
+Log Likelihood           & -34.31       & -40.63       & -39.99       & -39.53       \\
+Deviance                 & 68.62        & 81.25        & 79.99        & 79.06        \\
+Num. obs.                & 238          & 238          & 238          & 238          \\
+\hline
+\multicolumn{5}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$}}
+\end{tabular}
+\caption{Logistic regression models testing univariate differences in publication rates based on ad type (Park \& Parade vs Product), Leaning (Republican vs Democrat) Location, (State vs Federal), and Ad Poster Location (US vs non-US)}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+% latex table generated in R 3.4.3 by xtable 1.8-2 package
+% Sun Oct 14 00:01:44 2018
+\begin{table}[H]
+\centering
+\begin{tabular}{llllllrrrr}
+\hline
+\textbf{platform} & \textbf{ad poster} & \textbf{location} & \textbf{leaning} & \textbf{ad type} & \textbf{\#} & \textbf{published} \\ 
+ \hline
+Facebook & US & federal & Democrat & candidate.mistake &  20 & 100.0\% \\ 
+Facebook & US & federal & Republican & candidate.mistake &  19 & 94.7\% \\ 
+Facebook & US & state & Democrat & candidate.mistake &  20 & 100.0\% \\ 
+Facebook & US & state & Democrat & issue.mistake &  20 & 75.0\% \\ 
+Facebook & US & state & Republican & candidate.mistake &  20 & 100.0\% \\ 
+Facebook & US & state & Republican & issue.mistake &  21 & 90.5\% \\ 
+Facebook & Non-US & federal & Democrat & candidate.mistake &  20 & 100.0\% \\ 
+Facebook & Non-US & federal & Republican & candidate.mistake &  19 & 100.0\% \\ 
+Facebook & Non-US & state & Democrat & candidate.mistake &  19 & 100.0\% \\ 
+Facebook & Non-US & state & Democrat & issue.mistake &  20 & 90.0\% \\ 
+Facebook & Non-US & state & Republican & candidate.mistake &  20 & 100.0\% \\ 
+Facebook & Non-US & state & Republican & issue.mistake &  20 & 100.0\% \\ 
+\hline
+Google & US & federal & Democrat & candidate.mistake &  20 & 100.0\% \\ 
+Google & US & federal & Republican & candidate.mistake &  19 & 100.0\% \\ 
+Google & US & state & Democrat & candidate.mistake &  20 & 100.0\% \\ 
+Google & US & state & Democrat & issue.mistake &  20 & 100.0\% \\ 
+Google & US & state & Republican & candidate.mistake &  20 & 100.0\% \\ 
+Google & US & state & Republican & issue.mistake &  21 & 100.0\% \\ 
+Google & Non-US & federal & Democrat & candidate.mistake &  20 & 100.0\% \\ 
+Google & Non-US & federal & Republican & candidate.mistake &  20 & 100.0\% \\ 
+Google & Non-US & state & Democrat & candidate.mistake &  19 & 100.0\% \\ 
+Google & Non-US & state & Democrat & issue.mistake &  20 & 100.0\% \\ 
+Google & Non-US & state & Republican & candidate.mistake &  20 & 100.0\% \\ 
+Google & Non-US & state & Republican & issue.mistake &  20 & 100.0\% \\ 
+   \hline
+\end{tabular}
+\label{table:observed_ad_rates}
+\caption{Number of ads placed and percentage of ads published, for each combination of platform, investigator location, election location, leaning, and type of advertisement.}
+\end{table}
+
+\section*{Discussion}
+All enforcement systems make mistakes. Our study shows the rates at which Facebook and Google prohibit non-election ads under their election advertising policies.
+
+Overall, our study discovers evidence of systematic mistakes (false positives) by Facebook, who prevented the publication of ads that are acceptable within the company's own policies. Facebook policy enforcers regularly blocked ads for national holidays, government national park websites, and products that unfortunately include a candidate name. This false positive rate of \Sexpr{round(nrow(subset(ad.placement.attempt, publication.status.permitted==FALSE & platform=="Facebook")) / nrow(subset(ad.placement.attempt, platform=="Facebook"))*100, 1)}\% is not representative of all advertisements posted to Facebook, but it does represent an important segment of online advertising in the United States. 
+
+This study found no evidence of election ad policy enforcement by Google. We cannot provide guidance on whether our finding is due to a general lack of election policy enforcement by the company or whether Google is more accurate at enforcing its policies than Facebook in the cases we examine.
+
+This study has several limitations. First, we have not collected any information about either company's enforcement of advertisements that genuinely violate their policies. Second, our findings only generalize to the kinds of ads we tested: it is possible that publication rates are lower for other kinds of ads that have received attention in the press, such as news articles and LGBTQ gatherings. Third, failures to find differences in publication rates should not be interpreted as proof of no difference; a larger study may have detected differences more clearly. Fourth, in this study, we offered 1 unit of currency per day per ad. If platforms offer more scrutiny to ads that involve more money, it is possible that the rate of mistakes might be greater or lesser in those cases. Finally, since platforms frequently adjust their policies, internal guidelines, and training procedures with little public notice, these findings are most strongly informative about the period of time we studied.
+
+
+\section*{Acknowledgments}
+We are grateful to Molly Sauter, who provided logistical support to this study, and to Jon Penney, who provided helpful advice and feedback. This research project was supported financially by the Princeton University Center for Information Technology Policy.
+
+\bibliographystyle{abbrv} 
+\bibliography{ref}
+
+\end{document}
+

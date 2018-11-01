@@ -13,7 +13,7 @@ cbbPalette <- c("#E69F00", "#000000", "#56B4E9", "#009E73", "#F0E442", "#0072B2"
 ## Estimating Mistaken Enforcement of Election Advertising 
 ## Policies by Facebook and Google
 ## analysis by J. Nathan Matias and Austin Hounsel
-## October 15, 2018
+## October 25, 2018
 ##
 ## Study pre-registration at: https://osf.io/4zudh/
 ###################################################
@@ -267,9 +267,120 @@ texreg(list(issue.candidate.lm, issue.political.leaning.lm, state.federal.lm, pe
           custom.coef.names = c("(Intercept)", "Ad Type (Park \\& Parade)", "Leaning (Republican)", "Location (State)", "Ad Poster (US)"),
           custom.model.names = c("Ad Type", "Leaning", "Location", "Poster Location"))
 
+####################################################################
+### COMPARING FACEBOOK AND GOOGLE IRRESPECTIVE OF PERSONA
+####################################################################
+
+psp.results.allpersonas <- setNames(data.frame(matrix(ncol = 8, nrow = 0)), 
+                        c("election", "advert", "key", 
+                          "estimated.prob", 
+                          "estimated.lower.conf", 
+                          "estimated.upper.conf"))
+for(platform_key in unique(ad.placement.attempt$platform)){
+  for(election_key in unique(ad.placement.attempt$election)){
+    for(party_key in unique(ad.placement.attempt$ad.candidate.party)){
+      for(advert_key in unique(ad.placement.attempt$ad.type)){
+        ad.placement.subset <- subset(ad.placement.attempt, 
+                                        (election == election_key &
+                                           ad.candidate.party == party_key &
+                                           ad.type == advert_key &
+                                           platform == platform_key))
+        obs_count = nrow(ad.placement.subset)
+        leaning = gsub("Democrat", "left", gsub("Republican", "right", party_key))
+
+        results <- data.frame(platform = platform_key,
+                                election = election_key, 
+                                party=party_key, 
+                                advert=advert_key,
+                                key = paste(election_key, leaning, 
+                                            advert_key, sep=" + "),
+                                observations = obs_count)
+        estimate <- binom.confint(x = nrow(subset(ad.placement.subset, publication.status.permitted==1)), 
+                                    n = obs_count,
+                                    conf.level=0.95, methods="wilson")    
+        results$estimated.prob <- estimate$mean
+        results$estimated.lower.conf <- estimate$lower
+        results$estimated.upper.conf <- estimate$upper
+        psp.results.allpersonas <- rbind(psp.results.allpersonas, results)
+      }
+    }
+  }
+}
+
+## REMOVE NA RESULTS FOR AD TYPES THAT WERE NOT INCLUDED IN THE STUDY 
+psp.results.allpersonas <- subset(psp.results.allpersonas, is.na(estimated.prob) != TRUE)
+## GENERATE LaTeX table of results for report
+psp.results.allpersonas$pct.published <- paste(sprintf("%0.1f", psp.results.allpersonas$estimated.prob*100), "%", sep="")
+print(colnames(psp.results.allpersonas))
+xtable(psp.results.allpersonas[,c("platform","election", "party", "advert", "observations", "pct.published")])
+
+## GENERATE PLOTS: 
+## issue.mistake ads 
+## (national parks and veteran's day parades)
+
+advert_key = "issue.mistake"
+sample.size.allpersonas <- sum(subset(psp.results.allpersonas, advert==advert_key)$observations)
+psp.results.allpersonas$leaning <- "Right"
+psp.results.allpersonas$leaning[psp.results.allpersonas$party=="Democrat"] =="Left"
+
+
+ggplot(subset(psp.results.allpersonas, advert==advert_key), aes(factor(paste("  ", gsub(paste("\\+ ",advert_key,sep=""), "", key), sep="")), estimated.prob, color=factor(party))) +
+  facet_grid( . ~ platform ) +
+  geom_point(size=2) +
+  geom_errorbar(ymax=subset(psp.results.allpersonas, advert==advert_key)$estimated.upper.conf, 
+                ymin=subset(psp.results.allpersonas, advert==advert_key)$estimated.lower.conf,
+                width=0.4, size=1) +
+  scale_y_continuous(limits=c(0,1), breaks=seq(0,1,0.1), labels = scales::percent) +
+  scale_color_manual(values=c(cbbPalette[[3]], cbbPalette[[7]]), name = "Issue", labels=c("National Parks\n(left leaning)", "Veterans Day\n(right leaning)")) +
+  theme_bw(base_size = 12, base_family = "Helvetica") +
+  labs(y="", x="") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.y = element_blank(),
+        axis.title.x = element_text(hjust=0, size=1,lineheight = 0.9),
+        strip.text.x = element_text(face="bold", size=10)
+  ) +
+  coord_flip()  +
+  ggtitle("Veterans Day & National Parks - Ad Publication Rates") +
+  ggsave("figures/issue_mistake_results_allpersonas.png", width=8, height=1.75)
+
+
+## candidate mistake ads
+## (products that share a name with a candidate)
+
+advert_key = "candidate.mistake"
+sample.size.allpersonas <- sum(subset(psp.results.allpersonas, advert==advert_key)$observations)
+
+ggplot(subset(psp.results.allpersonas, advert==advert_key), aes(factor(gsub(paste("\\+ ",advert_key,sep=""), "", key)), estimated.prob, color=factor(party))) +
+  facet_grid( . ~ platform ) +
+  geom_point(size=2) +
+  geom_errorbar(ymax=subset(psp.results.allpersonas, advert==advert_key)$estimated.upper.conf, 
+                ymin=subset(psp.results.allpersonas, advert==advert_key)$estimated.lower.conf,
+                width=0.4, size=1) +
+  scale_y_continuous(limits=c(0,1), breaks=seq(0,1,0.1), labels = scales::percent) +
+  scale_color_manual(values=c(cbbPalette[[3]], cbbPalette[[7]]), name = "Mistaken Party", labels=c("Democrat", "Republican      ")) +
+  theme_bw(base_size = 12, base_family = "Helvetica") +
+  labs(y=paste("Estimated chance of publication ",
+               "for a given ad combination",
+               "(election, leaning). ",
+               "Ad placement attempts: ", sum(psp.results.allpersonas$obs), " ads \nplaced by ", length(unique(ad.placement.attempt$poster.id)), " people from ", first.date, " to ", last.date, ". ",  
+               "Product ads are music albums that share a word with \na candidate name. ",
+               "Veterans Day & National Park ads are about events and places that could be be mistaken \nby platform policy enforcers as election-related ads of national importance. ",
+               "95% confidence intervals use the \nWilson method. ",
+               "Code & data at: https://",  code.data.url,
+               "\n", "Data and analysis by J. Nathan Matias & Austin Hounsel of Princeton University,",
+               "\n", "with Melissa Hopkins, Ben Werdmuller, Jason Griffey, Chris Peterson, Scott Hale, and Nick Feamster", sep="")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.y = element_blank(),
+        axis.title.x = element_text(hjust=0, size=8,lineheight = 0.8, color="#999999"),
+        strip.text.x = element_text(face="bold", size=10)
+  ) +
+  coord_flip() +
+  ggtitle("Products Sharing a Name with a Candidate - Ad Publication Rates") +
+  ggsave("figures/candidate_mistake_results_allpersonas.png", width=8, height=2.8)
+
 
 ####################################################################
-### OUTPUT RESULTS
+### OUTPUT RESULTS TO FILE
 ####################################################################
 rm(filenames)
 save.image("data/ad.placement.attempts.10.15.2018.RData")
