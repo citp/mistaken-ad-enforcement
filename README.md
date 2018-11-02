@@ -8,7 +8,7 @@ Technology companies including Facebook and Google have created policies governi
 
 In this study, we ask how common these mistakes are and what kinds of ads are mistakenly prohibited by Facebook and Google. Over 23 days, 7 U.S. citizens living inside and outside the United States attempted to publish 477 non-election advertisements that varied in the type of ad, its potentially-mistaken political leaning, and its geographic targeting to a federal or state election voter population. Google did not prohibit any of the ads posted. Facebook prohibited 4.2% of the submitted ads.
 
-![Comparing Facebook and Google's publication rates of advertisements for veterans day, parks, and products](https://raw.githubusercontent.com/citp/mistaken-ad-enforcement/master/figures/advertising-analysis-full-results-allpersonas-10-24-2018.png)
+![Comparing Facebook and Google's publication rates of advertisements for veterans day, parks, and products](https://raw.githubusercontent.com/citp/mistaken-ad-enforcement/master/figures-from-article/advertising-analysis-full-results-allpersonas-10.24.2018.png)
 
 We found systematic evidence that Facebook’s policy enforcers are more likely to prohibit some kinds of non-election ads than others. Advertisements for national parks and veteran’s day celebrations were more commonly prohibited by Facebook than product ads. Within our sample size, we failed to find any differences of mistaken enforcement by Facebook in the leaning of the ad, the US/Non-US location of the submitter, or state/federal election targeting.
 
