@@ -12,8 +12,8 @@ In this study, we ask how common these mistakes are and what kinds of ads are mi
 
 We found systematic evidence that Facebook’s policy enforcers are more likely to prohibit some kinds of non-election ads than others. Advertisements for national parks and veteran’s day celebrations were more commonly prohibited by Facebook than product ads. Within our sample size, we failed to find any differences of mistaken enforcement by Facebook in the leaning of the ad, the US/Non-US location of the submitter, or state/federal election targeting.
 
-* Full report: [Estimating Publication Rates of Non-Election Ads by Facebook and Google](estimating-publication-rates-of-non-election-ads.pdf), Nov 1, 2018.
-* Atlantic Article: 
+* Full report: [Estimating Publication Rates of Non-Election Ads by Facebook and Google](estimating-publication-rates-of-non-election-ads.pdf) (Nov 1, 2018)
+* Atlantic Article: [We Tested Facebook’s Ad Screeners and Some Were Too Strict](https://www.theatlantic.com/technology/archive/2018/11/do-big-social-media-platforms-have-effective-ad-policies/574609/) (Nov 2, 2018)
 * Pre-Analysis plan: [Estimating Mistaken Enforcement of Tech Platform Political Advertising Policies](https://osf.io/4zudh/) (Sep 17, 2018)
 
 ## About This Project
