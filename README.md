@@ -59,6 +59,8 @@ This repository includes everything needed to re-analyze our results, including:
 ## Acknowledgments
 We are grateful to [Molly Sauter](https://oddletters.com/), who provided logistical support to this study, and to [Jon Penney](https://www.dal.ca/faculty/law/faculty-staff/our-faculty/jon-penney.html), who provided helpful advice and feedback.
 
+We are also very grateful to [Kendra Albert](https://hls.harvard.edu/faculty/directory/11839/Albert), of the [Harvard Law School Cyberlaw Clinic](http://clinic.cyber.harvard.edu/), who provided valuable counsel on the research design.
+
 ## License
 We are making the source code, data, figures, and reports available under a [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/) license. 
 
