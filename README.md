@@ -24,7 +24,7 @@ Overall, our research method involved creating software to auto-generate ads tha
 
 Full research methods are described in the [report with our results](estimating-publication-rates-of-non-election-ads.pdf). Before we collected any data, we also [pre-registered our analyses]((https://osf.io/4zudh/)) on the Open Science Framework. Because some of our research questions focused on political bias, we wanted to protect the trustworthiness of our research; by pre-registering our analysis, we protect ourselves from any question that we consciously or unconsciously altered our analysis approach after seeing the data. With the exception of fixing a bug, which we note in our [analysis source code](analysis-10.2018.R), we fully followed the procedure that we pre-registered.
 
-Because we believe the ad-creation software represents a novel contribution to computer science, we are waiting to release more information about the software until after the work has academic received peer review.
+Because we believe the ad-creation software represents a novel contribution to computer science, we are waiting to release more information about the software until after the work has received academic peer review.
 
 ### Research Ethics
 For legal and ethical reasons, we did not place any ads that explicitly (or implicitly) endorsed a political candidate. The lead researchers on this study are employed by Princeton University, which holds a 501(c)(3) non-profit status. According to federal law, 501(c)(3)s are forbidden from participating in electioneering, which includes placing advertisements that advocate for a candidate. Instead, we focused this research on advertising that is completely unrelated to the election.
