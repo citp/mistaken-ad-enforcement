@@ -33,7 +33,7 @@ filenames = c(
 "ad.poster.6.data.csv",
 "ad.poster.27.data.csv")
 
-advertising.results <- read.csv(paste("data/ad-results/",filenames[[1]], sep="/"))
+advertising.results <- read.csv(paste("../../data/ad-results/",filenames[[1]], sep="/"))
 for(i in seq(2, length(filenames))){
   print(filenames[[i]])
   df <- read.csv(paste("data/ad-results/",filenames[[i]], sep="/"))
